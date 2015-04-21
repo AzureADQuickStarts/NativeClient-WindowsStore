@@ -40,8 +40,8 @@ namespace DirectorySearcher
         //const string clientId = "[Enter client ID as obtained from Azure Portal, e.g. 82692da5-a86f-44c9-9d53-2f88d52b478b]";
         const string aadInstance = "https://login.microsoftonline.com/{0}";
 
-        const string tenant = "strockisdev.onmicrosoft.com";
-        const string clientId = "7de803e2-8e32-4e7a-8335-b77ae40297f0";
+        const string tenant = "[Enter tenant name, e.g. contoso.onmicrosoft.com]";
+        const string clientId = "[Enter client ID as obtained from Azure Portal, e.g. 82692da5-a86f-44c9-9d53-2f88d52b478b]";
 
         static string authority = String.Format(CultureInfo.InvariantCulture, aadInstance, tenant);
 
