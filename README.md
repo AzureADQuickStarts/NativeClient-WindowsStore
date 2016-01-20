@@ -64,7 +64,6 @@ public MainPage()
 {
     ...
 
-    // ADAL for Windows Phone 8.1 builds AuthenticationContext instances through a factory
     authContext = new AuthenticationContext(authority)
 }
 ```
