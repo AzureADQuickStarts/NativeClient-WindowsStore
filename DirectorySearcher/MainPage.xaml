@@ -60,7 +60,7 @@
     </Grid>
 
     <Page.BottomAppBar>
-        <CommandBar>
+        <CommandBar IsSticky="True" IsOpen="True">
             <AppBarButton x:Uid="RemoveAppBarButton" x:Name="RemoveAppBarButton" Label="sign out" Icon="Account" Click="RemoveAppBarButton_Click" />
         </CommandBar>
     </Page.BottomAppBar>
