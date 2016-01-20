@@ -64,7 +64,7 @@ public MainPage()
 {
     ...
 
-    authContext = new AuthenticationContext(authority)
+    authContext = new AuthenticationContext(authority);
 }
 ```
 
