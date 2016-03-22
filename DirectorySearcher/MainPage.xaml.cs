@@ -1,14 +1,11 @@
-﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Newtonsoft.Json.Linq;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Popups;
@@ -19,8 +16,10 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.Web.Http;
+using Windows.Web.Http.Headers;
 
-// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
+// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 namespace DirectorySearcher
 {
@@ -36,13 +35,9 @@ namespace DirectorySearcher
         // The Authority is the sign-in URL of the tenant.
         //
 
-        //const string tenant = "[Enter tenant name, e.g. contoso.onmicrosoft.com]";
-        //const string clientId = "[Enter client ID as obtained from Azure Portal, e.g. 82692da5-a86f-44c9-9d53-2f88d52b478b]";
-        const string aadInstance = "https://login.microsoftonline.com/{0}";
-
         const string tenant = "[Enter tenant name, e.g. contoso.onmicrosoft.com]";
         const string clientId = "[Enter client ID as obtained from Azure Portal, e.g. 82692da5-a86f-44c9-9d53-2f88d52b478b]";
-
+        const string aadInstance = "https://login.microsoftonline.com/{0}";
         static string authority = String.Format(CultureInfo.InvariantCulture, aadInstance, tenant);
 
         const string graphResourceId = "https://graph.windows.net/";
@@ -55,11 +50,11 @@ namespace DirectorySearcher
 
         public MainPage()
         {
-            this.InitializeComponent();
-
             redirectURI = Windows.Security.Authentication.Web.WebAuthenticationBroker.GetCurrentApplicationCallbackUri();
 
             authContext = new AuthenticationContext(authority);
+
+            this.InitializeComponent();
         }
 
         // clear the token cache
@@ -80,6 +75,11 @@ namespace DirectorySearcher
             StatusResult.Text = string.Empty;
         }
 
+        private async void ShowAuthError(string message)
+        {
+            MessageDialog dialog = new MessageDialog(message, "Sorry, an error occurred while signing you in.");
+            await dialog.ShowAsync();
+        }
 
         private async void Search(object sender, RoutedEventArgs e)
         {
@@ -90,13 +90,16 @@ namespace DirectorySearcher
                 return;
             }
 
-            AuthenticationResult result = await authContext.AcquireTokenAsync(graphResourceId, clientId, redirectURI);
-            if (result.Status != AuthenticationStatus.Success)
+            AuthenticationResult result = null;
+            try
             {
-                if (result.Error != "authentication_canceled")
+                result = await authContext.AcquireTokenAsync(graphResourceId, clientId, redirectURI, new PlatformParameters(PromptBehavior.Auto, false));
+            }
+            catch (AdalException ex)
+            {
+                if (ex.ErrorCode != "authentication_canceled")
                 {
-                    MessageDialog dialog = new MessageDialog(string.Format("If the error continues, please contact your administrator.\n\nError: {0}\n\nError Description:\n\n{1}", result.Error, result.ErrorDescription), "Sorry, an error occurred while signing you in.");
-                    await dialog.ShowAsync();
+                    ShowAuthError(string.Format("If the error continues, please contact your administrator.\n\nError: {0}\n\nError Description:\n\n{1}", ex.ErrorCode, ex.Message));
                 }
                 return;
             }
@@ -105,9 +108,9 @@ namespace DirectorySearcher
             ActiveUser.Text = result.UserInfo.DisplayableId;
 
             // Add the access token to the Authorization Header of the call to the Graph API, and call the Graph API.
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
+            httpClient.DefaultRequestHeaders.Authorization = new HttpCredentialsHeaderValue("Bearer", result.AccessToken);
             string graphRequest = String.Format(CultureInfo.InvariantCulture, "{0}{1}/users?api-version={2}&$filter=startswith(userPrincipalName, '{3}')", graphEndpoint, tenant, graphApiVersion, SearchTermText.Text);
-            HttpResponseMessage response = await httpClient.GetAsync(graphRequest);
+            HttpResponseMessage response = await httpClient.GetAsync(new Uri(graphRequest));
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
@@ -125,7 +128,10 @@ namespace DirectorySearcher
                 return;
             }
 
-            string content = response.Content.ReadAsStringAsync().Result;
+
+
+            string content = await response.Content.ReadAsStringAsync();
+
             JObject jResult = JObject.Parse(content);
 
             if (jResult["odata.error"] != null)
@@ -143,15 +149,13 @@ namespace DirectorySearcher
 
             StatusResult.Text = "Success";
             StatusResult.Foreground = new SolidColorBrush(Windows.UI.Colors.Green);
-            SearchResults.ItemsSource = 
+            SearchResults.ItemsSource =
                 from user in jResult["value"]
                 select new
                 {
                     userPrincipalName = user["userPrincipalName"],
                     displayName = user["displayName"]
                 };
-
-
         }
     }
 }

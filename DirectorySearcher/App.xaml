@@ -2,6 +2,7 @@
     x:Class="DirectorySearcher.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:DirectorySearcher">
+    xmlns:local="using:DirectorySearcher"
+    RequestedTheme="Light">
 
 </Application>

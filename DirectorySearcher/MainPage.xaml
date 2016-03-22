@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid x:Name="LayoutRoot" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -56,12 +56,10 @@
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>
-
     </Grid>
-
     <Page.BottomAppBar>
-        <CommandBar IsSticky="True" IsOpen="True">
-            <AppBarButton x:Uid="RemoveAppBarButton" x:Name="RemoveAppBarButton" Label="sign out" Icon="Account" Click="RemoveAppBarButton_Click" />
+        <CommandBar IsSticky="False" IsOpen="False" ClosedDisplayMode="Minimal">
+            <AppBarButton x:Uid="RemoveAppBarButton" x:Name="RemoveAppBarButton" Label="Remove Account" Icon="Account" Click="RemoveAppBarButton_Click" />
         </CommandBar>
     </Page.BottomAppBar>
 </Page>
