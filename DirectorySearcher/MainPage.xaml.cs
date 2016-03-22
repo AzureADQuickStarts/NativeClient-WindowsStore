@@ -52,7 +52,7 @@ namespace DirectorySearcher
         {
             redirectURI = Windows.Security.Authentication.Web.WebAuthenticationBroker.GetCurrentApplicationCallbackUri();
 
-            authContext = new AuthenticationContext(authority);
+            // TODO: Initialize the Authentication Context
 
             this.InitializeComponent();
         }
@@ -65,8 +65,7 @@ namespace DirectorySearcher
 
         private void SignOut()
         {
-            // Clear session state from the token cache.
-            authContext.TokenCache.Clear();
+            // TODO: Sign the user out by clearing the token cache
 
             // Reset UI elements
             SearchResults.ItemsSource = null;
@@ -90,25 +89,12 @@ namespace DirectorySearcher
                 return;
             }
 
-            AuthenticationResult result = null;
-            try
-            {
-                result = await authContext.AcquireTokenAsync(graphResourceId, clientId, redirectURI, new PlatformParameters(PromptBehavior.Auto, false));
-            }
-            catch (AdalException ex)
-            {
-                if (ex.ErrorCode != "authentication_canceled")
-                {
-                    ShowAuthError(string.Format("If the error continues, please contact your administrator.\n\nError: {0}\n\nError Description:\n\n{1}", ex.ErrorCode, ex.Message));
-                }
-                return;
-            }
+            // TODO: Get a token for the Azure AD Graph API using ADAL
 
-            // Update the Page UI to represent the signed in user
-            ActiveUser.Text = result.UserInfo.DisplayableId;
+            // TODO: Update the page UI using the AuthenticationResult
 
-            // Add the access token to the Authorization Header of the call to the Graph API, and call the Graph API.
-            httpClient.DefaultRequestHeaders.Authorization = new HttpCredentialsHeaderValue("Bearer", result.AccessToken);
+            // TODO: Attach the access_token to the request
+
             string graphRequest = String.Format(CultureInfo.InvariantCulture, "{0}{1}/users?api-version={2}&$filter=startswith(userPrincipalName, '{3}')", graphEndpoint, tenant, graphApiVersion, SearchTermText.Text);
             HttpResponseMessage response = await httpClient.GetAsync(new Uri(graphRequest));
 
